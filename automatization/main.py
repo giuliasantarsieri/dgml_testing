@@ -2,7 +2,7 @@ import pandas as pd
 import pandas_profiling
 from generate_csv import *
 #get last version of csv as a dictionary
-file = pd.read_csv('output_csv/openml_table.csv')
+file = pd.read_csv('output_csv/openml_table.csv',index_col=0)
 csv_dictionary = file.to_dict(orient='list')
 #read a given csv file
 url = input('Please enter url of new dataset:')
@@ -30,5 +30,5 @@ external_xp_url = input('Please enter the url of the external example.  If not a
 #enter these info in the csv
 J = [['resource_id',resource_id],['has_label',has_label],['title',title],['description',description],['topic',topic],['task',task],['target_variable',target_variable],['model_metric',model_metric],['best_value',best_value],['best_model',best_model],['dgf_dataset_url', dgf_dataset_url],['dgf_resource_url',dgf_resource_url],['automl_url',automl_url],['profile_url',profile_url],['dict_url',dict_url],['etalab_xp_url',etalab_xp_url],['external_xp_url',external_xp_url]]
 new_dictionary = add_to_dict(csv_dictionary,L,J)
-dictionary = update_csv(new_dictionary)
+update_csv(new_dictionary)
 print("Successfully updated openml_table.csv")
