@@ -1,0 +1,2 @@
+,resource_id,has_label,title,description,topic,nb_rows,nb_cols,nb_categorical_var,nb_numerical_var,high_cardinality,missing_cells_pct,task,target_variable,model_metric,best_value,best_model,dgf_dataset_url,dgf_resource_url,automl_url,profile_url,dict_url,etalab_xp_url,external_xp_url
+0,96f4164d-956d-4c1c-b161-68724eb0ccdc,VRAI,Arbres urbains,Informations sur la localisation et l’état de santé du patrimoine arboré de la commune de Saint-Germain-en-Laye. ,Environnement,709,57,49,8,Yes,16.0,Classification,classification_diagnostic,accuracy,"0,901408",Ensemble,,,,,,,
