@@ -1,0 +1,9 @@
+,Best model,name,model_type,metric_type,metric_value,train_time
+0,,1_Baseline,Baseline,logloss,1.19558,0.32
+1,,2_DecisionTree,Decision Tree,logloss,0.69032,25.55
+2,,3_Linear,Linear,logloss,0.515071,14.85
+3,,4_Default_Xgboost,Xgboost,logloss,0.269899,18.28
+4,,5_Default_NeuralNetwork,Neural Network,logloss,0.372544,0.95
+5,,6_Default_RandomForest,Random Forest,logloss,0.448182,16.6
+6,,4_Default_Xgboost_categorical_mix,Xgboost,logloss,0.320313,29.55
+7,the best,Ensemble,Ensemble,logloss,0.249979,0.22
