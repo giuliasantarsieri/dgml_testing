@@ -1,3 +1,4 @@
+
 # Guide au AutoML Leaderboard report
 
 Cette page a pour but de vous aider à mieux comprendre les résultats du AutoML Leaderboard report qui est fourni pour chaque jeu de données.
@@ -70,13 +71,13 @@ Pour plus de détail sur la `feature-importance`, cliquer ici: https://scikit-le
 
 Pour calculer les SHAP importance, SHAP dependence plots, SHAP decision plots le [package `shap`](https://shap.readthedocs.io/en/latest/) est utilisé.
 
-![](https://storage.gra.cloud.ovh.net/v1/AUTH_0f20d409cb2a4c9786c769e2edec0e06/imagespadincubateurnet/uploads/upload_0d9f426d6c44336f8533b286c2e40cfa.png =500x300)
+![](https://storage.gra.cloud.ovh.net/v1/AUTH_0f20d409cb2a4c9786c769e2edec0e06/imagespadincubateurnet/uploads/upload_2c0c730957a8750228369de8b61d2272.png)
 
 
-![](https://storage.gra.cloud.ovh.net/v1/AUTH_0f20d409cb2a4c9786c769e2edec0e06/imagespadincubateurnet/uploads/upload_c2a0f0aa86f56d96ddbaea4ff8b0c6e9.png =500x300)
+![](https://storage.gra.cloud.ovh.net/v1/AUTH_0f20d409cb2a4c9786c769e2edec0e06/imagespadincubateurnet/uploads/upload_c2a0f0aa86f56d96ddbaea4ff8b0c6e9.png)
 
-![](https://storage.gra.cloud.ovh.net/v1/AUTH_0f20d409cb2a4c9786c769e2edec0e06/imagespadincubateurnet/uploads/upload_08805ef41cf684d91b609137e3d86308.png =500x300)
 
+![](https://storage.gra.cloud.ovh.net/v1/AUTH_0f20d409cb2a4c9786c769e2edec0e06/imagespadincubateurnet/uploads/upload_ddd0c0eea10c390863cee45684a3f004.png)
 
 
 SHAP (SHapley Additive exPlanations) est une approche issue de la théorie des jeux qui nous permet de mieux comprendre les résultats d'un modèle de Machine Learning.
