@@ -11,26 +11,18 @@ def latest_catalog():
     pd.set_option('display.max_colwidth', None)  # to stop pandas from "cutting" long urls
     return dgf_catalog_df
 
-
-catalog = latest_catalog()
-
-
-def get_resource_url(id):
-    """Given its id, this function returns the url of a given dgf resource.
-    -----------------------------
+def info_from_catalog(id):
+    """This function returns a dictionary containing : the resource url, the resource format and the url of its data.gouv.fr page
+    --------------------------------------------
     :param:     id: id of the dgf resource
     :type:      id: string"""
+    catalog = latest_catalog()
     url = catalog[catalog['id'] == id]['url'].values.item()
-    return url
-
-
-def get_resource_format(id):
-    """Given its id, this function returns the format (csv,txt, etc.) of a given dgf resource as referenced by dgf.
-     -----------------------------
-    :param:     id: id of the dgf resource
-    :type:      id: string"""
     file_format = catalog[catalog['id'] == id]['format'].values.item()
-    return file_format
+    dgf_page = catalog[catalog['id'] == id]['dataset.url'].values.item()
+    catalog_dict = {'url_resource': url, 'format': file_format,'url_dgf':dgf_page}
+    return catalog_dict
+
 
 
 def detect_csv(request):
@@ -55,18 +47,18 @@ def detect_csv(request):
 
 
 def load_dataset(id):
-    """This function loads a csv in the datasets folder given its id if the dataset is referenced by data.gouv.fr. Otherwise, you get
-    an error and you should manually upload it.
+    """This function loads a csv in the datasets folder/creates a pandas datafram given its id if the dataset is referenced by data.gouv.fr.
+    Otherwise, you get an error and you should manually upload it.
     Remark: on data.gouv.fr, datasets are available in various "formats": json, shp, csv, zip, document, xls, pdf, html, xlsx,geojson etc.
     to this day, our repository only contains files with .csv,.txt, .xls extensions, therefore we only treat these extensions.
     -------------------
     :param:     id: id of the dgf resource (must be a txt, csv or xls file)
     :type:      id: string"""
-    url = get_resource_url(id)
+    url = info_from_catalog(id)['url_resource']
     headers = requests.head(url).headers
     downloadable = 'attachment' in headers.get('Content-Disposition', '')
     if downloadable is True:  # if the dataset is referenced
-        file_format = get_resource_format(id)
+        file_format = info_from_catalog(id)['format']
         request = requests.get(url)
         delimiter = detect_csv(request)['separator']
         encoding = detect_csv(request)['encoding']
@@ -92,10 +84,10 @@ def load_dataset(id):
         else:
             raise TypeError(
                 'Please choose a dataset that has one of the following extensions: .csv, .txt, .xls or choose a zipped file')
-        dataframe.to_csv('datasets/' + id + '.csv')
-        print('Successfully uploaded the csv file corresponding to this id.')
+        #dataframe.to_csv('datasets/' + id + '.csv')
+        return dataframe
     else:
-        dgf_page = catalog[catalog['id'] == id]['dataset.url'].values.item()
+        dgf_page = info_from_catalog(id)['url_dgf']
         raise Exception(
             'This id is associated to a dataset not referenced by data.gouv.fr. \n Please check the dataset here:' + dgf_page + '\n Please manually load it in the datasets folder and name it: id.csv')
 
