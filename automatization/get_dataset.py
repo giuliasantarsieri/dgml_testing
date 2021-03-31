@@ -1,5 +1,7 @@
 import pandas as pd
 import requests
+import math
+
 
 def latest_catalog():
     """This function returns the pandas dataframe of the latest version of dgf resource catalog
@@ -9,16 +11,27 @@ def latest_catalog():
     pd.set_option('display.max_colwidth', None)  # to stop pandas from "cutting" long urls
     return dgf_catalog_df
 
+
 catalog = latest_catalog()
+
 
 def get_resource_url(id):
     """Given its id, this function returns the url of a given dgf resource.
     -----------------------------
     :param:     id: id of the dgf resource
     :type:      id: string"""
-    resource = catalog
-    url = resource[resource['id']==id]['url'].values.item()
+    url = catalog[catalog['id'] == id]['url'].values.item()
     return url
+
+
+def get_resource_format(id):
+    """Given its id, this function returns the format (csv,txt, etc.) of a given dgf resource as referenced by dgf.
+     -----------------------------
+    :param:     id: id of the dgf resource
+    :type:      id: string"""
+    file_format = catalog[catalog['id'] == id]['format'].values.item()
+    return file_format
+
 
 def detect_csv(request):
     """Given the url request for a csv or txt file, this function returns a dictionary containing the csv encoding and separator.
@@ -33,35 +46,59 @@ def detect_csv(request):
         sep = ","
     elif "|" in text:
         sep = "|"
+    elif "\t" in text:
+        sep = "\t"
     else:
         raise TypeError('separator not detected')
-    url_dict = {'encoding':encoding,'separator':sep}
+    url_dict = {'encoding': encoding, 'separator': sep}
     return url_dict
 
-def load_csv(id):
+
+def load_dataset(id):
     """This function loads a csv in the datasets folder given its id if the dataset is referenced by data.gouv.fr. Otherwise, you get
-    an error and you should manually upload it. The function returns the pandas dataframe associated to the csv if the csv is referenced
+    an error and you should manually upload it.
+    Remark: on data.gouv.fr, datasets are available in various "formats": json, shp, csv, zip, document, xls, pdf, html, xlsx,geojson etc.
+    to this day, our repository only contains files with .csv,.txt, .xls extensions, therefore we only treat these extensions.
     -------------------
-    :param:     id: id of the dgf resource
+    :param:     id: id of the dgf resource (must be a txt, csv or xls file)
     :type:      id: string"""
     url = get_resource_url(id)
-    if 'data' in url.rsplit('://www.', 1)[-1]: # if the dataset is referenced
+    headers = requests.head(url).headers
+    downloadable = 'attachment' in headers.get('Content-Disposition', '')
+    if downloadable is True:  # if the dataset is referenced
+        file_format = get_resource_format(id)
         request = requests.get(url)
         delimiter = detect_csv(request)['separator']
         encoding = detect_csv(request)['encoding']
-        if encoding==None:
-            encoding = 'latin-1'
-        if url.rsplit('.', 1)[-1]=='zip': # handling zipped files
-            compression = 'zip'
-            error_bad_lines = False
-        elif url.rsplit('.', 1)[-1]=='gzip':
-            compression = 'gzip'
-            error_bad_lines = False
+        if (file_format == 'csv') or (math.isnan(
+                file_format) is True):  # if the format is not available on dgf, we assume it is a csv by default
+            dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, index_col=0)
+        elif file_format == 'txt':
+            dataframe = pd.read_table(url, sep=delimiter, encoding=encoding, index_col=0)
+        elif (file_format == 'xls') or (file_format == 'xlsx'):
+            dataframe = pd.read_excel(url, sheet_name=None, index_col=0)
+        elif (file_format == 'zip') or (url.rsplit('.', 1)[-1] == 'zip'):
+            dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='zip',
+                                    error_bad_lines=False, index_col=0)
+        elif (file_format == 'gz') or (url.rsplit('.', 1)[-1] == 'gz'):
+            dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='gzip',
+                                    error_bad_lines=False, index_col=0)
+        elif (file_format == 'bz2') or (url.rsplit('.', 1)[-1] == 'bz2'):
+            dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='bz2',
+                                    error_bad_lines=False, index_col=0)
+        elif (file_format == 'xz') or (url.rsplit('.', 1)[-1] == 'xz'):
+            dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='xz',
+                                    error_bad_lines=False, index_col=0)
         else:
-            compression = 'infer'
-            error_bad_lines = True
-        dataframe = pd.read_csv(url,encoding=encoding,sep=delimiter,index_col=0,error_bad_lines=error_bad_lines)
-        dataframe.to_csv('datasets/'+id+'.csv')
-        return dataframe
+            raise TypeError(
+                'Please choose a dataset that has one of the following extensions: .csv, .txt, .xls or choose a zipped file')
+        dataframe.to_csv('datasets/' + id + '.csv')
+        print('Successfully uploaded the csv file corresponding to this id.')
     else:
-        raise Exception('This dataset is associated with a dataset not referenced by datagouv.fr \n Please manually load it in the datasets folder and name it: id.csv')
+        dgf_page = catalog[catalog['id'] == id]['dataset.url'].values.item()
+        raise Exception(
+            'This id is associated to a dataset not referenced by data.gouv.fr. \n Please check the dataset here:' + dgf_page + '\n Please manually load it in the datasets folder and name it: id.csv')
+
+# Remark on separators detection : the 'python engine' in pd.read_csv/read_table  works pretty well most of the time. However, it does not handle well some
+# exceptions (see for instance the dataset: 90a98de0-f562-4328-aa16-fe0dd1dca60f).
+# Improvements/to do: detect_csv:  separators detection should be handled better (not very robust, possibly does not cover all the exceptions)
