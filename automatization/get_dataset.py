@@ -1,6 +1,5 @@
-import pandas as pd
 import requests
-import math
+import pandas as pd
 
 
 def latest_catalog():
@@ -20,7 +19,8 @@ def info_from_catalog(id):
     url = catalog[catalog['id'] == id]['url'].values.item()
     file_format = catalog[catalog['id'] == id]['format'].values.item()
     dgf_page = catalog[catalog['id'] == id]['dataset.url'].values.item()
-    catalog_dict = {'url_resource': url, 'format': file_format,'url_dgf':dgf_page}
+    format_is_nan = catalog[catalog['id']==id]['format'].isnull().values.any()
+    catalog_dict = {'url_resource': url, 'format': file_format,'url_dgf':dgf_page, 'format_is_nan':format_is_nan}
     return catalog_dict
 
 
@@ -59,11 +59,11 @@ def load_dataset(id):
     downloadable = 'attachment' in headers.get('Content-Disposition', '')
     if downloadable is True:  # if the dataset is referenced
         file_format = info_from_catalog(id)['format']
+        format_is_nan = info_from_catalog(id)['format_is_nan']
         request = requests.get(url)
         delimiter = detect_csv(request)['separator']
         encoding = detect_csv(request)['encoding']
-        if (file_format == 'csv') or (math.isnan(
-                file_format) is True):  # if the format is not available on dgf, we assume it is a csv by default
+        if (file_format == 'csv') or (format_is_nan is True):  # if the format is not available on dgf, we assume it is a csv by default
             dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, index_col=0)
         elif file_format == 'txt':
             dataframe = pd.read_table(url, sep=delimiter, encoding=encoding, index_col=0)
@@ -94,3 +94,4 @@ def load_dataset(id):
 # Remark on separators detection : the 'python engine' in pd.read_csv/read_table  works pretty well most of the time. However, it does not handle well some
 # exceptions (see for instance the dataset: 90a98de0-f562-4328-aa16-fe0dd1dca60f).
 # Improvements/to do: detect_csv:  separators detection should be handled better (not very robust, possibly does not cover all the exceptions)
+

@@ -1,4 +1,3 @@
-import pandas as pd
 import pandas_profiling
 from pandas_profiling import ProfileReport
 from get_dataset import *
@@ -32,6 +31,7 @@ def get_statistic_summary(id):
     column_names = ["Number of rows", "Number of columns", "Numerical variables", "Categorical variables",
                     "Percentage of missing values", "High cardinality variables"
         , "High correlation variables"]
-    df = pd.DataFrame(columns=column_names)
+    df = pd.DataFrame(columns=column_names,index_col=0)
     df.loc[1] = [rows_nb, cols_nb, num, cat, mis, nb_high_card, nb_high_corr]
-    df.to_csv(id + '.csv')
+    df.to_csv('statistics_csv/'+id + '.csv')
+
