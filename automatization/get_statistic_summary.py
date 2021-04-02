@@ -3,26 +3,24 @@ from pandas_profiling import ProfileReport
 from get_dataset import *
 
 
-def generate_pandas_profiling(id):
+def generate_pandas_profiling(id,data):
     """Returns the Pandas Profiling of this dataset. The name of the output html file is id.html
     --------------------------------------------
     :param:       id: id of the dataset
     :type:        id: string
     """
-    data = load_dataset(id)
     profiling = ProfileReport(data, minimal=True)
-    #profiling.to_file(id + ".html")
+    profiling.to_file(id + ".html")
     return profiling
 
 
 
-def get_statistic_summary(id):
+def get_statistic_summary(id,profiling):
     """Returns a csv file containing all the relevant dataset statistics from pandas profiling.
     -----------------------------------------------
     :param:       id: id of the dataset
     :type:        id: string
     """
-    profiling = generate_pandas_profiling(id)
     get_description = profiling.get_description()
     table = get_description['table']
     keys_to_extract = ['n', 'n_var', 'p_cells_missing']
@@ -49,13 +47,12 @@ def get_statistic_summary(id):
     return df
 
 
-def rejected_var(id):
+def rejected_var(profiling):
     """This function returns a list of the variables detected as unsupported by Pandas Profiling.
     -----------------------------------
     :param:       id: id of the dataset
     :type:        id: string
     """
-    profiling = generate_pandas_profiling(id)
     get_description = profiling.get_description()
     messages = get_description["messages"]
     pos_rej = -1
