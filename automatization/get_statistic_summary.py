@@ -3,22 +3,37 @@ from pandas_profiling import ProfileReport
 from get_dataset import *
 
 
+def generate_pandas_profiling(id):
+    """Returns the Pandas Profiling of this dataset. The name of the output html file is id.html
+    --------------------------------------------
+    :param:       id: id of the dataset
+    :type:        id: string
+    """
+    data = load_dataset(id)
+    profiling = ProfileReport(data, minimal=True)
+    #profiling.to_file(id + ".html")
+    return profiling
+
+
+
 def get_statistic_summary(id):
     """Returns a csv file containing all the relevant dataset statistics from pandas profiling.
     -----------------------------------------------
     :param:       id: id of the dataset
     :type:        id: string
     """
-    data = load_dataset(id)
-    profiler_report = ProfileReport(data, minimal=True).get_description()
-    table = profiler_report['table']
-    rows_nb = table['n']  # nb of rows
-    cols_nb = table['n_var']  # nb of columns
-    table['types'] = {str(k): int(v) for k, v in table['types'].items()}
-    cat = table['types']['Categorical']  # numerical/categorical variables
-    num = table['types']['Numeric']
-    messages = profiler_report["messages"]
-    warnings = ["HIGH_CARDINALITY", "HIGH_CORRELATION"]  # high cardinality and high correlation
+    profiling = generate_pandas_profiling(id)
+    get_description = profiling.get_description()
+    table = get_description['table']
+    keys_to_extract = ['n', 'n_var', 'p_cells_missing']
+    dict_stats_table = {key: table[key] for key in keys_to_extract}  # nb of rows, columns and percentage of nan
+    dict_stats_table['Number of lines'] = dict_stats_table.pop('n')  # properly rename keys
+    dict_stats_table['Number of variables'] = dict_stats_table.pop('n_var')
+    dict_stats_table['Percentage of missing cells'] = dict_stats_table.pop('p_cells_missing')
+    dict_stats_table['Percentage of missing cells'] = round(dict_stats_table['Percentage of missing cells'], 2) * 100
+    table['types'] = {str(k): int(v) for k, v in table['types'].items()}  # categorical/numerical variables
+    messages = get_description["messages"]
+    warnings = ["HIGH_CARDINALITY", "HIGH_CORRELATION"]  # high cardinality, high correlation columns
     nb_high_card = 0
     nb_high_corr = 0
     for message in messages:
@@ -27,11 +42,29 @@ def get_statistic_summary(id):
             nb_high_card += 1
         elif message_type in warnings[1]:
             nb_high_corr += 1
-    mis = round(table['p_cells_missing'], 2) * 100  # missing values percentage
-    column_names = ["Number of rows", "Number of columns", "Numerical variables", "Categorical variables",
-                    "Percentage of missing values", "High cardinality variables"
-        , "High correlation variables"]
-    df = pd.DataFrame(columns=column_names,index_col=0)
-    df.loc[1] = [rows_nb, cols_nb, num, cat, mis, nb_high_card, nb_high_corr]
-    df.to_csv('statistics_csv/'+id + '.csv')
+    dict_warnings = {"High cardinality variables": nb_high_card, "High correlation variables": nb_high_corr}
+    dict_for_df = {**dict_stats_table, **table['types'], **dict_warnings}
+    df = pd.DataFrame(dict_for_df, index=[0])
+    df.to_csv(id + '_pandas_prof.csv')
+    return df
 
+
+def rejected_var(id):
+    """This function returns a list of the variables detected as unsupported by Pandas Profiling.
+    -----------------------------------
+    :param:       id: id of the dataset
+    :type:        id: string
+    """
+    profiling = generate_pandas_profiling(id)
+    get_description = profiling.get_description()
+    messages = get_description["messages"]
+    pos_rej = -1
+    list_rej = []
+    for message in messages:
+        pos_rej += 1
+        message_type = message.message_type.name
+        if message_type == 'REJECTED':
+            rejected_mess = str(messages[pos_rej])
+            rej_name = rejected_mess.split("warning on column ", 1)[1]
+            list_rej.append(rej_name)
+    return list_rej
