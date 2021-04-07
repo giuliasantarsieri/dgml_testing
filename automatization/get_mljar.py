@@ -69,7 +69,7 @@ def prepare_to_mljar(data, target_variable, task, profiling):
     return data
 
 
-def generate_mljar(data, target_variable):
+def generate_mljar(data, target_variable, output_dir):
     """This function takes a properly prepared dataframe and performs AutoML on it. The generated output is the html report.
     ------------------------------------------------
     :param:     :data: dataframe on which we want to perform a given ML task
@@ -79,7 +79,8 @@ def generate_mljar(data, target_variable):
     y = data[target_variable].values
     X = data.drop(columns=[target_variable])
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-    automl = AutoML(total_time_limit=5 * 60, mode='Explain')
+    results_path = output_dir.joinpath("automl")
+    automl = AutoML(results_path=results_path.as_posix(), total_time_limit=5 * 60, mode='Explain')
     automl.fit(X_train, y_train)
-    predictions = automl.predict(X_test)
     automl.report()
+    return automl

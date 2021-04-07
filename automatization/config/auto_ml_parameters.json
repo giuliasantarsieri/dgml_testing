@@ -1,0 +1,8 @@
+[
+  {
+    "id": "96f4164d-956d-4c1c-b161-68724eb0ccdc",
+    "target": "classification_diagnostic",
+    "task": "binary_classification",
+    "output_dir": "./datasets/resources"
+  }
+]

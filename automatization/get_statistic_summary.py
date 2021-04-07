@@ -3,20 +3,21 @@ from pandas_profiling import ProfileReport
 from get_dataset import *
 
 
-def generate_pandas_profiling(id,data):
+def generate_pandas_profiling(id, data, output_dir, config_path=None):
     """Returns the Pandas Profiling of this dataset. The name of the output html file is id.html
     --------------------------------------------
     :param:       id: id of the dataset
     :type:        id: string
     """
-    profiling = ProfileReport(data, minimal=True)
-    profiling.to_file(id + ".html")
+
+    profiling = ProfileReport(data, minimal=True, config_file=config_path)
+    profiling.to_file(output_dir.joinpath(f"{id}_pandas_profile.html"))
     return profiling
 
 
-
-def get_statistic_summary(id,profiling):
+def get_statistics_summary(id, profiling, output_dir):
     """Returns a csv file containing all the relevant dataset statistics from pandas profiling.
+    This summary is the info pandas profiling info we display in the web page
     -----------------------------------------------
     :param:       id: id of the dataset
     :type:        id: string
@@ -43,7 +44,7 @@ def get_statistic_summary(id,profiling):
     dict_warnings = {"High cardinality variables": nb_high_card, "High correlation variables": nb_high_corr}
     dict_for_df = {**dict_stats_table, **table['types'], **dict_warnings}
     df = pd.DataFrame(dict_for_df, index=[0])
-    df.to_csv(id + '_pandas_prof.csv')
+    df.to_csv(output_dir.joinpath("statistics_summary.csv"))
     return df
 
 
