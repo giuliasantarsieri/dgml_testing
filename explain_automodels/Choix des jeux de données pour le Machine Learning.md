@@ -2,7 +2,7 @@
 
 Parmi le grand nombre de jeux de données disponibles sur data.gouv.fr, nous avons séléctionné les jeux de données ayant les caractéristiques suivantes:
 
-1. Une **taille adéquate** pour pouvoir entraîner et tester les algorithmes: nombre de lignes allant de l'ordre de $10^{3}$ à $10^{6}$ et nombre de colonnes de l'ordre de $10^{1}$ ou $10^{2}$. Le ratio entre la taille des lignes et des colonnes a également été pris en compte.
+1. Une **taille adéquate** pour pouvoir entraîner et tester les algorithmes: nombre de lignes allant de l'ordre de 10^{3} à 10^{6} et nombre de colonnes de l'ordre de 10^{1} ou 10^{2}. Le ratio entre la taille des lignes et des colonnes a également été pris en compte.
 2. Un bon **équilibre** entre le nombre de **variables catégorielles** et de le nombre de variables **numériques** (on écarte par exemple les jeux de données avec 0 variables numériques).
 3. Pour les variables catégorielles, nous avons privilégié les variables ayant un nombre faible de classes et avec des **classes** assez **équilibrées** 
 
