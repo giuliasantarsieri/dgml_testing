@@ -1,8 +1,8 @@
 [
   {
-    "id": "96f4164d-956d-4c1c-b161-68724eb0ccdc",
-    "target": "classification_diagnostic",
-    "task": "binary_classification",
+    "id": "aa50b408-49f4-4608-97fd-dd8fb21ef239",
+    "target": "Log_soc",
+    "task": "regression",
     "output_dir": "./datasets/resources"
   }
 ]

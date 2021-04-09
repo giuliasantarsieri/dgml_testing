@@ -7,19 +7,20 @@ from get_mljar import *
 import json
 import glob
 
-PARAMETER_FILE = Path("./automatization/config/auto_ml_parameters.json")
+PARAMETER_FILE = Path("./config/auto_ml_parameters.json")
 if PARAMETER_FILE.exists():
     with open(PARAMETER_FILE) as fout:
         PARAMETERS = json.load(fout)
 else:
-    raise FileNotFoundError(f"Config gile {PARAMETER_FILE.as_posix()} does not exist.")
+    raise FileNotFoundError(f"Config file {PARAMETER_FILE.as_posix()} does not exist.")
 
 
 def create_output_folder(output_dir):
     if output_dir.exists():
+       # if not output_dir.joinpath(f"./datasets/resources/{id}"):
         shutil.rmtree(output_dir.as_posix())
 
-    output_dir.mkdir()
+    output_dir.mkdir(exist_ok=True)
 
     return output_dir
 

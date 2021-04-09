@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import os
 
 
 def latest_catalog():
@@ -13,7 +14,8 @@ def latest_catalog():
 
 def fixed_catalog():
     """This function returns the pandas dataframe containg a 'catalog' of our datasets"""
-    dgf_catalog_df = pd.read_csv('automatization/catalog.csv')
+    dgf_catalog_df = pd.read_csv('./catalog.csv')
+    pd.set_option('display.max_colwidth', None)  # to stop pandas from "cutting" long urls
     return dgf_catalog_df
 
 
@@ -33,6 +35,20 @@ def info_from_catalog(id: str, catalog: pd.DataFrame):
     format_is_nan = catalog[catalog['id'] == id]['format'].isnull().values.any()
     catalog_dict = {'url_resource': url, 'format': file_format, 'url_dgf': dgf_page, 'format_is_nan': format_is_nan}
     return catalog_dict
+
+
+def is_referenced(url, id):
+    """Given the url of  a resource from the catalog, this function returns True if the resource is referenced by data.gouv.fr
+    False otherwise
+    :param      :url: url of a resource in the catalog
+    :type       :url: string"""
+    headers = requests.head(url).headers
+    downloadable = 'attachment' in headers.get('Content-Disposition', '')
+    if downloadable == False:
+        if os.path.isfile(f'./datasets/resources/{id}/{id}.csv') == False:
+            raise Exception(f'This id is associated to a dataset not referenced by data.gouv.fr. \n '
+                            f'Please manually upload it in the datasets folder and name it: {id}.csv')
+    return downloadable
 
 
 def detect_csv(request):
@@ -65,9 +81,10 @@ def load_dataset(id, catalog_info, output_dir):
     :param:     id: id of the dgf resource (must be a txt, csv or xls file)
     :type:      id: string"""
     url = catalog_info['url_resource']
-    headers = requests.head(url).headers
-    downloadable = 'attachment' in headers.get('Content-Disposition', '')
-    if downloadable is True:  # if the dataset is referenced
+    # headers = requests.head(url).headers
+    # downloadable = 'attachment' in headers.get('Content-Disposition', '')
+    referenced = is_referenced(url=url, id=id)
+    if referenced is True:  # if the dataset is referenced
         file_format = catalog_info['format']
         format_is_nan = catalog_info['format_is_nan']
         request = requests.get(url)
@@ -112,11 +129,13 @@ def load_dataset(id, catalog_info, output_dir):
         dataframe.to_csv(output_dir.joinpath(f"{id}.csv"))
         return dataframe
     else:
-        dgf_page = catalog_info['url_dgf']
-        raise Exception(
-            f'This id is associated to a dataset not referenced by data.gouv.fr. \n '
-            f'Please check the dataset here: {dgf_page}'
-            f'\n Then manually upload it in the datasets folder and name it: {id}.csv')
+        dataframe = pd.read_csv(f"./datasets/resources/{id}/{id}.csv", sep=None, engine='python')
+        return dataframe
+        # dgf_page = catalog_info['url_dgf']
+        # raise Exception(
+        # f'This id is associated to a dataset not referenced by data.gouv.fr. \n '
+        # f'Please check the dataset here: {dgf_page}'
+        # f'\n Then manually upload it in the datasets folder and name it: {id}.csv')
 
 # Remark on separators detection : the 'python engine' in pd.read_csv/read_table  works pretty well most of the time. However, it does not handle well some
 # exceptions (see for instance the dataset: 90a98de0-f562-4328-aa16-fe0dd1dca60f).

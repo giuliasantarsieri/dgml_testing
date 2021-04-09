@@ -40,6 +40,7 @@ def prepare_to_mljar(data, target_variable, task, profiling):
     # check if the type of the target variable is right
     description = profiling.get_description()
     type_target = str(description['variables'][target_variable]['type'])
+
     if task == 'regression':
         if type_target == 'Categorical':
             data[target_variable] = data[target_variable].str.replace(',', '.', regex=True)
