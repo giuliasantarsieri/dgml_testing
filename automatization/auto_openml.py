@@ -16,12 +16,8 @@ else:
 
 
 def create_output_folder(output_dir):
-    if output_dir.exists():
-       # if not output_dir.joinpath(f"./datasets/resources/{id}"):
-        shutil.rmtree(output_dir.as_posix())
-
-    output_dir.mkdir(exist_ok=True)
-
+    if not output_dir.exists():
+       output_dir.mkdir()
     return output_dir
 
 
@@ -46,6 +42,7 @@ def main():
 
         catalog_info = info_from_catalog(id, catalog)
         output_dir = create_output_folder(output_dir)
+
         data = load_dataset(id, catalog_info, output_dir=output_dir)
         print("Successfully loaded dataset.")
         profiling = generate_pandas_profiling(id, data, output_dir=output_dir, config_path=None)

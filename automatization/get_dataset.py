@@ -37,17 +37,19 @@ def info_from_catalog(id: str, catalog: pd.DataFrame):
     return catalog_dict
 
 
-def is_referenced(url, id):
+def is_referenced(url, id, catalog_info):
     """Given the url of  a resource from the catalog, this function returns True if the resource is referenced by data.gouv.fr
     False otherwise
     :param      :url: url of a resource in the catalog
     :type       :url: string"""
+    dgf_page = catalog_info['url_dgf']
     headers = requests.head(url).headers
     downloadable = 'attachment' in headers.get('Content-Disposition', '')
     if downloadable == False:
         if os.path.isfile(f'./datasets/resources/{id}/{id}.csv') == False:
             raise Exception(f'This id is associated to a dataset not referenced by data.gouv.fr. \n '
-                            f'Please manually upload it in the datasets folder and name it: {id}.csv')
+                            f'Please download the dataset from here: {dgf_page}\n'
+                                f'Then manually upload it in the corresponding folder and name it: {id}.csv')
     return downloadable
 
 
@@ -81,9 +83,7 @@ def load_dataset(id, catalog_info, output_dir):
     :param:     id: id of the dgf resource (must be a txt, csv or xls file)
     :type:      id: string"""
     url = catalog_info['url_resource']
-    # headers = requests.head(url).headers
-    # downloadable = 'attachment' in headers.get('Content-Disposition', '')
-    referenced = is_referenced(url=url, id=id)
+    referenced = is_referenced(url=url, id=id, catalog_info = catalog_info)
     if referenced is True:  # if the dataset is referenced
         file_format = catalog_info['format']
         format_is_nan = catalog_info['format_is_nan']
@@ -131,11 +131,7 @@ def load_dataset(id, catalog_info, output_dir):
     else:
         dataframe = pd.read_csv(f"./datasets/resources/{id}/{id}.csv", sep=None, engine='python')
         return dataframe
-        # dgf_page = catalog_info['url_dgf']
-        # raise Exception(
-        # f'This id is associated to a dataset not referenced by data.gouv.fr. \n '
-        # f'Please check the dataset here: {dgf_page}'
-        # f'\n Then manually upload it in the datasets folder and name it: {id}.csv')
+
 
 # Remark on separators detection : the 'python engine' in pd.read_csv/read_table  works pretty well most of the time. However, it does not handle well some
 # exceptions (see for instance the dataset: 90a98de0-f562-4328-aa16-fe0dd1dca60f).
