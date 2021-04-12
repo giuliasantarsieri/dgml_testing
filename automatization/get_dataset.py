@@ -45,6 +45,7 @@ def is_referenced(url, id, catalog_info):
     dgf_page = catalog_info['url_dgf']
     headers = requests.head(url).headers
     downloadable = 'attachment' in headers.get('Content-Disposition', '')
+    #download_zip = 'application/zip' in headers.get('Content-Type','')
     if downloadable == False:
         if os.path.isfile(f'./datasets/resources/{id}/{id}.csv') == False:
             raise Exception(f'This id is associated to a dataset not referenced by data.gouv.fr. \n '
@@ -93,34 +94,34 @@ def load_dataset(id, catalog_info, output_dir):
         if file_format == 'csv' or format_is_nan == True:  # if the format is not available on dgf, we assume it is a csv by default
             if url.rsplit('.', 1)[-1] == 'zip':
                 dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='zip',
-                                        error_bad_lines=False, index_col=0)
+                                        error_bad_lines=False)
             elif url.rsplit('.', 1)[-1] == 'gz':
                 dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='gzip',
-                                        error_bad_lines=False, index_col=0)
+                                        error_bad_lines=False)
             elif url.rsplit('.', 1)[-1] == 'bz2':
                 dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='bz2',
-                                        error_bad_lines=False, index_col=0)
+                                        error_bad_lines=False)
             elif url.rsplit('.', 1)[-1] == 'xz':
                 dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='xz',
-                                        error_bad_lines=False, index_col=0)
+                                        error_bad_lines=False)
             else:
-                dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, index_col=0)
+                dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding)
         elif file_format == 'txt':
-            dataframe = pd.read_table(url, sep=delimiter, encoding=encoding, index_col=0)
+            dataframe = pd.read_table(url, sep=delimiter, encoding=encoding)
         elif (file_format == 'xls') or (file_format == 'xlsx'):
-            dataframe = pd.read_excel(url, sheet_name=None, index_col=0)
+            dataframe = pd.read_excel(url, sheet_name=None)
         elif file_format == 'zip':
             dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='zip',
-                                    error_bad_lines=False, index_col=0)
+                                    error_bad_lines=False)
         elif file_format == 'gz':
             dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='gzip',
-                                    error_bad_lines=False, index_col=0)
+                                    error_bad_lines=False)
         elif file_format == 'bz2':
             dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='bz2',
-                                    error_bad_lines=False, index_col=0)
+                                    error_bad_lines=False)
         elif file_format == 'xz':
             dataframe = pd.read_csv(url, sep=None, engine='python', encoding=encoding, compression='xz',
-                                    error_bad_lines=False, index_col=0)
+                                    error_bad_lines=False)
         else:
             raise TypeError(
                 'Please choose a dataset that has one of the following extensions: .csv, .txt, .xls or choose '

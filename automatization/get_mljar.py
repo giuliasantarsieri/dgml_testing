@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from supervised.automl import AutoML
 import IPython
 import markdown
+import validators
 
 
 # Minimal rules to be followed to get mljar working
@@ -32,15 +33,22 @@ def prepare_to_mljar(data, target_variable, task, profiling):
     """
     data = data[data[target_variable].isna() == False]  # handle NaN in target variable
     list_rej = rejected_var(profiling)
-    if len(list_rej)!=0:
+    if len(list_rej) != 0:
         data = data.drop(columns=list_rej)  # drop unsupported variables
     data = data.drop(columns=[col for col in data.columns if
                               data[col].isna().sum() / len(data) > 0.7])  # drop columns with more than 70% of NaN
-    data = data.T.drop_duplicates().T   #drop redundant columns if there are any
-    # check if the type of the target variable is right
+    data = data.loc[:, ~data.columns.duplicated()]  # drop redundant columns if there are any
     description = profiling.get_description()
     type_target = str(description['variables'][target_variable]['type'])
-
+    pandas_cat_col = [key for key, value in description['variables'].items() if str(value['type']) == 'Categorical'] #drop long columns
+    pandas_cat_col = [col for col in pandas_cat_col if col in data.columns]
+    long_text_cols = [(data[col].str.split().str.len().mean(), col) for col in pandas_cat_col if
+                      np.any([isinstance(val, str) for val in data[col]])]
+    url_columns = [col for col in pandas_cat_col if (str(data[col][1]).startswith('https'))]
+    columns_to_drop = [long_text_cols[i][1] for i in range(len(long_text_cols)) if long_text_cols[i][0] > 15]
+    columns_to_drop = columns_to_drop + url_columns
+    data = data.drop(columns=columns_to_drop)
+    # check if the type of the target variable is right
     if task == 'regression':
         if type_target == 'Categorical':
             data[target_variable] = data[target_variable].str.replace(',', '.', regex=True)
@@ -61,12 +69,6 @@ def prepare_to_mljar(data, target_variable, task, profiling):
     else:
         raise ValueError(
             'Please enter one of the following words as task: regression, binary_classification, multi_classification')
-    #pandas_cat_col = [key for key, value in description['variables'].items() if
-                      #str(value['type']) == 'Categorical']  # get rid of variables containing long text
-    #long_text_cols = [(data[col].str.split().str.len().mean(), col) for col in pandas_cat_col if
-                      #np.any([isinstance(val, str) for val in data[col]])]
-    #columns_to_drop = [long_text_cols[i][1] for i in range(len(long_text_cols)) if long_text_cols[i][0] > 15]
-    #data = data.drop(columns=columns_to_drop)
     return data
 
 
@@ -83,5 +85,6 @@ def generate_mljar(data, target_variable, output_dir):
     results_path = output_dir.joinpath("automl")
     automl = AutoML(results_path=results_path.as_posix(), total_time_limit=5 * 60, mode='Explain')
     automl.fit(X_train, y_train)
+    predictions = automl.predict(X_test)
     automl.report()
     return automl
