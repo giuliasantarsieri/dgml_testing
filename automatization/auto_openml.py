@@ -52,6 +52,7 @@ def main():
                                      task=param["task"], profiling=profiling)
         automl = generate_mljar(data=prep_data, target_variable=param["target"], output_dir=output_dir)
         get_mljar_info(output_dir=output_dir, automl_report=automl)
+        plot_mljar_table(id)
         print("Successfully generated AutoML report.")
 
 
