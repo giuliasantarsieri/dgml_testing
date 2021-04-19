@@ -52,6 +52,32 @@ def get_statistics_summary(id, profiling, output_dir):
     return df
 
 
+def get_dict_data(id, profiling, output_dir):
+    """This function returns a csv file called dict_data containing a list of all the variables together with their detected types and
+    two empty columns. These two should then be manually updated if a dictionary is available. If not, manually delete the two central columns.
+    -----------------------------------------------
+    :param:       id: id of the dataset
+    :type:        id: str
+    :param:       profiling: Pandas Profiling
+    :type:        profiling: pandas profiling
+    :param:       output_dir: output directory for the csv
+    :type:        output_dir: str"""
+    data_dict = {}
+    get_description = profiling.get_description()
+    variables_description = get_description['variables']
+    for variable in variables_description:
+        data_dict.update({str(variable): [variables_description[variable]['type']]})
+    dict_df = pd.DataFrame.from_dict(data_dict, orient='index')
+    dict_df = dict_df.reset_index()
+    dict_df = dict_df.rename(columns={"index": "Name", 0: "Detected Type"})
+    data_dict_df = pd.DataFrame({'Name': [], 'Dictionary Description': [], 'Dictionary Type': [], 'Detected Type': []})
+    for col in data_dict_df.columns:
+        if str(col) in dict_df:
+            data_dict_df[col] = dict_df[col]
+    data_dict_df.to_csv(output_dir.joinpath('dict_data.csv'), index=False)
+    return data_dict_df
+
+
 def rejected_var(profiling):
     """This function returns a list of the variables detected as unsupported by Pandas Profiling.
     -----------------------------------

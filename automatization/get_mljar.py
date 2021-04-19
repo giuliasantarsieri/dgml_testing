@@ -43,7 +43,8 @@ def prepare_to_mljar(data, target_variable, task, profiling):
     data = data.loc[:, ~data.columns.duplicated()]  # drop redundant columns if there are any
     description = profiling.get_description()
     type_target = str(description['variables'][target_variable]['type'])
-    pandas_cat_col = [key for key, value in description['variables'].items() if str(value['type']) == 'Categorical'] #drop long columns
+    pandas_cat_col = [key for key, value in description['variables'].items() if
+                      str(value['type']) == 'Categorical']  # drop long columns
     pandas_cat_col = [col for col in pandas_cat_col if col in data.columns]
     long_text_cols = [(data[col].str.split().str.len().mean(), col) for col in pandas_cat_col if
                       np.any([isinstance(val, str) for val in data[col]])]
@@ -91,6 +92,7 @@ def generate_mljar(data, target_variable, output_dir):
     predictions = automl.predict(X_test)
     automl.report()
     return automl
+
 
 def plot_mljar_table(id):
     """Returns a plot from the mljar leaderboard with train_time of the x-axis and metric_value on the y axis"""
