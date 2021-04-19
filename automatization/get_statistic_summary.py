@@ -31,6 +31,10 @@ def get_statistics_summary(id, profiling, output_dir):
     dict_stats_table['Percentage of missing cells'] = dict_stats_table.pop('p_cells_missing')
     dict_stats_table['Percentage of missing cells'] = round(dict_stats_table['Percentage of missing cells'], 2) * 100
     table['types'] = {str(k): int(v) for k, v in table['types'].items()}  # categorical/numerical variables
+    if 'Numeric' not in table['types']:
+        table['types']['Numeric'] = 0
+    elif 'Categorical' not in table['types']:
+        table['types']['Categorical'] = 0
     messages = get_description["messages"]
     warnings = ["HIGH_CARDINALITY", "HIGH_CORRELATION"]  # high cardinality, high correlation columns
     nb_high_card = 0
