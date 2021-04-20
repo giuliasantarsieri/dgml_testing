@@ -49,11 +49,11 @@ def main():
         get_statistics_summary(id, profiling, output_dir=output_dir)
         get_dict_data(id, profiling, output_dir=output_dir)
         print("Successfully generated Pandas Profiling.")
-        #prep_data = prepare_to_mljar(data=data, target_variable=param["target"],
-                                     #task=param["task"], profiling=profiling)
-        #automl = generate_mljar(data=prep_data, target_variable=param["target"], output_dir=output_dir)
-        #get_mljar_info(output_dir=output_dir, automl_report=automl)
-        #plot_mljar_table(id)
+        prep_data = prepare_to_mljar(data=data, target_variable=param["target"],
+                                     task=param["task"], profiling=profiling)
+        automl = generate_mljar(data=prep_data, target_variable=param["target"], output_dir=output_dir)
+        get_mljar_info(output_dir=output_dir, automl_report=automl)
+        plot_mljar_table(id)
         print("Successfully generated AutoML report.")
 
 
