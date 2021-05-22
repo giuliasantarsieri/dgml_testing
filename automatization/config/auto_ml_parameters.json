@@ -1,8 +1,0 @@
-[
-  {
-    "id": "aa50b408-49f4-4608-97fd-dd8fb21ef239",
-    "target": "Log_soc",
-    "task": "regression",
-    "output_dir": "./datasets/resources"
-  }
-]
